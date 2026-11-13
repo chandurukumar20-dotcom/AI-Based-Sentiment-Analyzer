@@ -1,0 +1,257 @@
+[
+  {
+    "text": "The product is excellent and the customer service is amazing.",
+    "sentiment": "Positive",
+    "confidence": 89.24,
+    "scores": {
+      "positive": 48.4,
+      "negative": 0.0,
+      "neutral": 51.6
+    },
+    "source": "batch",
+    "filename": "sample_reviews.csv",
+    "created_at": "2026-11-13 13:49:07",
+    "timestamp": 1794557947.888902,
+    "_id": "ec2df64b-4378-4a53-a81f-e24a67ec354a"
+  },
+  {
+    "text": "The product is terrible and I am very disappointed.",
+    "sentiment": "Negative",
+    "confidence": 86.36,
+    "scores": {
+      "positive": 0.0,
+      "negative": 52.0,
+      "neutral": 48.0
+    },
+    "source": "batch",
+    "filename": "sample_reviews.csv",
+    "created_at": "2026-11-13 13:49:07",
+    "timestamp": 1794557947.888902,
+    "_id": "d7f508de-7c1c-41f9-885e-cca6ad125937"
+  },
+  {
+    "text": "The product was delivered yesterday.",
+    "sentiment": "Neutral",
+    "confidence": 98.0,
+    "scores": {
+      "positive": 0.0,
+      "negative": 0.0,
+      "neutral": 100.0
+    },
+    "source": "batch",
+    "filename": "sample_reviews.csv",
+    "created_at": "2026-11-13 13:49:07",
+    "timestamp": 1794557947.888902,
+    "_id": "9765f63f-d77f-4dd1-ba90-846205097c1e"
+  },
+  {
+    "text": "Absolutely loved this purchase! High quality material and fast delivery.",
+    "sentiment": "Positive",
+    "confidence": 82.11,
+    "scores": {
+      "positive": 33.3,
+      "negative": 0.0,
+      "neutral": 66.7
+    },
+    "source": "batch",
+    "filename": "sample_reviews.csv",
+    "created_at": "2026-11-13 13:49:07",
+    "timestamp": 1794557947.888902,
+    "_id": "8fb8d7f7-fe2d-4993-84c9-b92e07d5a434"
+  },
+  {
+    "text": "Worst experience ever. It stopped working after two days and no refund was given.",
+    "sentiment": "Negative",
+    "confidence": 88.5,
+    "scores": {
+      "positive": 0.0,
+      "negative": 42.7,
+      "neutral": 57.3
+    },
+    "source": "batch",
+    "filename": "sample_reviews.csv",
+    "created_at": "2026-11-13 13:49:07",
+    "timestamp": 1794557947.888902,
+    "_id": "1be792b9-2442-4c9c-b728-603e74593380"
+  },
+  {
+    "text": "Average quality, neither good nor bad. Does the basic job as described.",
+    "sentiment": "Negative",
+    "confidence": 77.96,
+    "scores": {
+      "positive": 0.0,
+      "negative": 32.3,
+      "neutral": 67.7
+    },
+    "source": "batch",
+    "filename": "sample_reviews.csv",
+    "created_at": "2026-11-13 13:49:07",
+    "timestamp": 1794557947.888902,
+    "_id": "1ef2c0b6-125d-4173-a0cf-cb17ab606610"
+  },
+  {
+    "text": "Incredible value for money! Highly recommended to everyone looking for great value.",
+    "sentiment": "Positive",
+    "confidence": 92.38,
+    "scores": {
+      "positive": 58.5,
+      "negative": 0.0,
+      "neutral": 41.5
+    },
+    "source": "batch",
+    "filename": "sample_reviews.csv",
+    "created_at": "2026-11-13 13:49:07",
+    "timestamp": 1794557947.888902,
+    "_id": "a73e2119-c6e9-42a4-9264-0a2ecaf2eef1"
+  },
+  {
+    "text": "Extremely poor customer support. Waited on hold for 45 minutes without any help.",
+    "sentiment": "Negative",
+    "confidence": 69.17,
+    "scores": {
+      "positive": 15.9,
+      "negative": 30.4,
+      "neutral": 53.7
+    },
+    "source": "batch",
+    "filename": "sample_reviews.csv",
+    "created_at": "2026-11-13 13:49:07",
+    "timestamp": 1794557947.888902,
+    "_id": "1252bcd4-2bfc-4c9b-92c6-50a17a9b8857"
+  },
+  {
+    "text": "The package arrived in a brown cardboard box with standard tape.",
+    "sentiment": "Neutral",
+    "confidence": 98.0,
+    "scores": {
+      "positive": 0.0,
+      "negative": 0.0,
+      "neutral": 100.0
+    },
+    "source": "batch",
+    "filename": "sample_reviews.csv",
+    "created_at": "2026-11-13 13:49:07",
+    "timestamp": 1794557947.888902,
+    "_id": "48ad6add-067f-4bbf-bd61-080e8a14ba63"
+  },
+  {
+    "text": "Stunning design and exceptional battery life! Exceeded all my expectations.",
+    "sentiment": "Positive",
+    "confidence": 71.07,
+    "scores": {
+      "positive": 24.3,
+      "negative": 0.0,
+      "neutral": 75.7
+    },
+    "source": "batch",
+    "filename": "sample_reviews.csv",
+    "created_at": "2026-11-13 13:49:07",
+    "timestamp": 1794557947.888902,
+    "_id": "578c2e0f-ed6e-447c-b507-298340c796f9"
+  },
+  {
+    "text": "Defective on arrival. Screen was cracked and power button was completely loose.",
+    "sentiment": "Negative",
+    "confidence": 82.15,
+    "scores": {
+      "positive": 0.0,
+      "negative": 35.5,
+      "neutral": 64.5
+    },
+    "source": "batch",
+    "filename": "sample_reviews.csv",
+    "created_at": "2026-11-13 13:49:07",
+    "timestamp": 1794557947.888902,
+    "_id": "011bf985-bfcb-4304-b255-031f921f7e3f"
+  },
+  {
+    "text": "I received three units in the order.",
+    "sentiment": "Neutral",
+    "confidence": 98.0,
+    "scores": {
+      "positive": 0.0,
+      "negative": 0.0,
+      "neutral": 100.0
+    },
+    "source": "batch",
+    "filename": "sample_reviews.csv",
+    "created_at": "2026-11-13 13:49:07",
+    "timestamp": 1794557947.888902,
+    "_id": "79756947-5a34-4eb6-8d25-bef5ee578c98"
+  },
+  {
+    "text": "This is the best purchase I have made all year! Fantastic work team.",
+    "sentiment": "Positive",
+    "confidence": 90.51,
+    "scores": {
+      "positive": 44.7,
+      "negative": 0.0,
+      "neutral": 55.3
+    },
+    "source": "batch",
+    "filename": "sample_reviews.csv",
+    "created_at": "2026-11-13 13:49:07",
+    "timestamp": 1794557947.888902,
+    "_id": "967e6fc6-9fee-4b5c-a00c-b6564b0c36e9"
+  },
+  {
+    "text": "Waste of hard-earned money. Very low durability and broke on first use.",
+    "sentiment": "Negative",
+    "confidence": 87.93,
+    "scores": {
+      "positive": 0.0,
+      "negative": 47.0,
+      "neutral": 53.0
+    },
+    "source": "batch",
+    "filename": "sample_reviews.csv",
+    "created_at": "2026-11-13 13:49:07",
+    "timestamp": 1794557947.888902,
+    "_id": "9cd19855-6488-4b7d-ad1f-60102927525f"
+  },
+  {
+    "text": "Item dimensions are 12 inches by 8 inches as indicated in the product manual.",
+    "sentiment": "Neutral",
+    "confidence": 98.0,
+    "scores": {
+      "positive": 0.0,
+      "negative": 0.0,
+      "neutral": 100.0
+    },
+    "source": "batch",
+    "filename": "sample_reviews.csv",
+    "created_at": "2026-11-13 13:49:07",
+    "timestamp": 1794557947.888902,
+    "_id": "98d434b3-23da-467c-bbd3-397d94b1e3d0"
+  },
+  {
+    "text": "The product was delivered yesterday.",
+    "sentiment": "Neutral",
+    "confidence": 98.0,
+    "scores": {
+      "positive": 0.0,
+      "negative": 0.0,
+      "neutral": 100.0
+    },
+    "source": "single",
+    "filename": null,
+    "created_at": "2026-11-13 13:49:07",
+    "timestamp": 1794557947.776167,
+    "_id": "8330b197-50c6-408d-819a-3f0911741c41"
+  },
+  {
+    "text": "The product is terrible and I am very disappointed.",
+    "sentiment": "Negative",
+    "confidence": 86.36,
+    "scores": {
+      "positive": 0.0,
+      "negative": 52.0,
+      "neutral": 48.0
+    },
+    "source": "single",
+    "filename": null,
+    "created_at": "2026-11-13 13:49:07",
+    "timestamp": 1794557947.761143,
+    "_id": "16922e9c-f780-4762-a4b3-85de01515fd2"
+  }
+]

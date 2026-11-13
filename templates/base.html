@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SentiAI Pro - AI-Based Sentiment Analysis System{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    {% block head_extra %}{% endblock %}
+</head>
+<body class="bg-light">
+    <div class="app-wrapper">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar shadow-sm" id="sidebar">
+            <div class="sidebar-header">
+                <a href="{{ url_for('dashboard.home') }}" class="brand-link">
+                    <div class="brand-icon">
+                        <i class="bi bi-cpu-fill"></i>
+                    </div>
+                    <div class="brand-text">
+                        <span class="brand-title">SentiAI <span class="badge-pro">PRO</span></span>
+                        <span class="brand-subtitle">NLP Sentiment System</span>
+                    </div>
+                </a>
+                <button class="btn btn-sm btn-link sidebar-close-btn d-lg-none" id="sidebarCloseBtn" aria-label="Close sidebar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <div class="sidebar-menu">
+                <div class="menu-label">CORE MODULES</div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{{ url_for('dashboard.home') }}">
+                            <i class="bi bi-house-door-fill"></i>
+                            <span>Home Page</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/dashboard' %}active{% endif %}" href="{{ url_for('dashboard.dashboard_view') }}">
+                            <i class="bi bi-speedometer2"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/analyze' %}active{% endif %}" href="{{ url_for('analysis.analyze_view') }}">
+                            <i class="bi bi-chat-square-text-fill"></i>
+                            <span>Analyze Text</span>
+                            <span class="badge bg-primary ms-auto">NLP</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path in ['/bulk-analysis', '/bulk'] %}active{% endif %}" href="{{ url_for('analysis.bulk_analysis_view') }}">
+                            <i class="bi bi-file-earmark-spreadsheet-fill"></i>
+                            <span>Bulk Analysis</span>
+                            <span class="badge bg-success ms-auto">CSV</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/history' %}active{% endif %}" href="{{ url_for('history.history_view') }}">
+                            <i class="bi bi-clock-history"></i>
+                            <span>Analysis History</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="menu-label mt-4">DOCUMENTATION</div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/about' %}active{% endif %}" href="{{ url_for('dashboard.about') }}">
+                            <i class="bi bi-info-circle-fill"></i>
+                            <span>About & Methodology</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="system-status-box">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="status-label">Database</span>
+                        {% if db_status.connected %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                <i class="bi bi-check-circle-fill me-1"></i>MongoDB
+                            </span>
+                        {% else %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle" title="Operating with local JSON fallback">
+                                <i class="bi bi-hdd-fill me-1"></i>Local Storage
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="status-label">NLP Model</span>
+                        <span class="badge bg-indigo-subtle text-indigo border border-indigo-subtle" title="{{ model_engine }}">
+                            <i class="bi bi-stars me-1"></i>VADER &amp; HF
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-wrapper">
+            <!-- Top Navbar -->
+            <header class="topbar sticky-top shadow-sm">
+                <div class="container-fluid px-4 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-3">
+                        <button class="btn btn-outline-secondary d-lg-none" id="sidebarToggleBtn" aria-label="Toggle navigation">
+                            <i class="bi bi-list fs-5"></i>
+                        </button>
+                        <div class="page-title-box">
+                            <h5 class="mb-0 fw-bold">{% block page_title %}Dashboard{% endblock %}</h5>
+                            <small class="text-muted d-none d-sm-inline">{% block page_subtitle %}AI-powered sentiment intelligence{% endblock %}</small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2 gap-sm-3">
+                        <a href="{{ url_for('analysis.analyze_view') }}" class="btn btn-primary btn-sm d-flex align-items-center gap-1 shadow-sm">
+                            <i class="bi bi-plus-circle"></i>
+                            <span class="d-none d-sm-inline">Analyze Review</span>
+                        </a>
+                        <a href="{{ url_for('analysis.bulk_analysis_view') }}" class="btn btn-outline-success btn-sm d-flex align-items-center gap-1">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                            <span class="d-none d-sm-inline">Upload CSV</span>
+                        </a>
+                        <div class="status-indicator-pill d-none d-md-flex align-items-center gap-2 px-3 py-1 bg-white rounded-pill border shadow-sm">
+                            <span class="status-dot {% if db_status.connected %}bg-success{% else %}bg-warning{% endif %}"></span>
+                            <span class="small fw-semibold">
+                                {% if db_status.connected %}MongoDB Connected{% else %}Local Mode{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Body -->
+            <main class="page-content px-4 py-4">
+                {% block content %}{% endblock %}
+            </main>
+
+            <!-- Footer -->
+            <footer class="app-footer text-center py-3 border-top bg-white">
+                <div class="container-fluid px-4">
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 small text-muted">
+                        <span>&copy; 2026 <strong>SentiAI Pro</strong>. AI-Based Sentiment Analysis System.</span>
+                        <div class="d-flex align-items-center gap-3">
+                            <span><i class="bi bi-lightning-charge text-warning"></i> Powered by Python, Flask, Hugging Face &amp; MongoDB</span>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1090">
+        <div id="liveToast" class="toast align-items-center text-white border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2" id="toastMessage">
+                    <i class="bi bi-check-circle-fill fs-5" id="toastIcon"></i>
+                    <span id="toastText">Action completed</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js 4 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    {% block scripts_extra %}{% endblock %}
+</body>
+</html>

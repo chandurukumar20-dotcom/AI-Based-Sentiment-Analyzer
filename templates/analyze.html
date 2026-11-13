@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+
+{% block title %}Analyze Text - SentiAI Pro{% endblock %}
+{% block page_title %}Sentiment Analysis Engine{% endblock %}
+{% block page_subtitle %}Enter customer reviews, feedback, or text for real-time classification{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row g-4">
+        <!-- Input Column -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold mb-0">Input Text or Review</h5>
+                        <small class="text-muted">Type or paste customer comments below</small>
+                    </div>
+                    <button class="btn btn-sm btn-link text-muted text-decoration-none" id="clearTextBtn">
+                        <i class="bi bi-eraser me-1"></i>Clear
+                    </button>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Sample sentence quick selector pills -->
+                    <div class="mb-3">
+                        <label class="form-label small text-muted text-uppercase fw-semibold mb-2">
+                            <i class="bi bi-lightbulb me-1"></i>Try Benchmark Test Sentences:
+                        </label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-success sample-pill" data-text="The product is excellent and the customer service is amazing.">
+                                <i class="bi bi-emoji-smile me-1"></i>Sample Positive
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger sample-pill" data-text="The product is terrible and I am very disappointed.">
+                                <i class="bi bi-emoji-frown me-1"></i>Sample Negative
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary sample-pill" data-text="The product was delivered yesterday.">
+                                <i class="bi bi-emoji-neutral me-1"></i>Sample Neutral
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Textarea form -->
+                    <form id="sentimentForm">
+                        <div class="mb-3 position-relative">
+                            <textarea 
+                                class="form-control rounded-3 p-3 fs-6" 
+                                id="reviewInput" 
+                                rows="6" 
+                                placeholder="Paste a customer review, social media post, or feedback here... (e.g., 'The device arrived on time and the battery life is phenomenal!')"
+                                required
+                            ></textarea>
+                            <div class="text-counter text-muted small position-absolute bottom-0 end-0 p-2">
+                                <span id="charCount">0</span> characters
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 pt-2">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="saveRecordToggle" checked>
+                                <label class="form-check-label small fw-semibold text-muted" for="saveRecordToggle">
+                                    Save record to database history
+                                </label>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary px-4 py-2 fw-semibold d-flex align-items-center gap-2 shadow-sm" id="analyzeSubmitBtn">
+                                <span class="spinner-border spinner-border-sm d-none" id="analyzeSpinner" role="status"></span>
+                                <i class="bi bi-cpu-fill" id="analyzeIcon"></i>
+                                <span>Analyze Sentiment</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Alert message container -->
+                    <div id="analyzeAlert" class="mt-3 d-none"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Column -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 h-100" id="resultCard">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold mb-0">Analysis Result</h5>
+                        <small class="text-muted">NLP prediction and classification metrics</small>
+                    </div>
+                    <span class="badge bg-light text-dark border" id="resultEngineBadge">
+                        {{ analyzer.engine_name }}
+                    </span>
+                </div>
+
+                <div class="card-body p-4 d-flex flex-column" id="resultBody">
+                    <!-- Default Placeholder State -->
+                    <div class="placeholder-state text-center my-auto py-5" id="placeholderState">
+                        <div class="placeholder-icon mb-3">
+                            <i class="bi bi-chat-heart text-secondary" style="font-size: 3.5rem;"></i>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1">Awaiting Text Input</h6>
+                        <p class="text-muted small mb-3" style="max-width: 280px; margin: 0 auto;">
+                            Click a benchmark sample or enter your own customer review to view instant sentiment classification.
+                        </p>
+                        <span class="badge bg-light text-secondary border px-3 py-2">
+                            <i class="bi bi-info-circle me-1"></i>3-Class Detection (Pos / Neu / Neg)
+                        </span>
+                    </div>
+
+                    <!-- Dynamic Output State (Hidden initially) -->
+                    <div class="result-details d-none" id="resultContent">
+                        <!-- Primary Sentiment Highlight Banner -->
+                        <div class="sentiment-result-banner p-4 rounded-4 text-center mb-4 text-white shadow-sm" id="bannerSentiment">
+                            <div class="sentiment-emoji mb-2" id="resEmoji" style="font-size: 3rem;">😊</div>
+                            <h2 class="fw-bold mb-1 tracking-tight" id="resSentimentLabel">Positive</h2>
+                            <div class="d-inline-flex align-items-center gap-1 px-3 py-1 rounded-pill bg-white/20 backdrop-blur small fw-semibold" id="resConfidenceBadge">
+                                <i class="bi bi-shield-check"></i>
+                                <span>Confidence: <strong id="resConfidence">89.5%</strong></span>
+                            </div>
+                        </div>
+
+                        <!-- 3-Way Probability Bar -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="small fw-bold text-muted text-uppercase">Sentiment Probability Split</span>
+                                <span class="small text-muted font-monospace" id="resCompound">Compound: +0.82</span>
+                            </div>
+                            <div class="progress rounded-pill shadow-sm" style="height: 12px;">
+                                <div class="progress-bar bg-success" id="barPos" style="width: 50%" title="Positive"></div>
+                                <div class="progress-bar bg-secondary" id="barNeu" style="width: 30%" title="Neutral"></div>
+                                <div class="progress-bar bg-danger" id="barNeg" style="width: 20%" title="Negative"></div>
+                            </div>
+                            <div class="d-flex justify-content-between small mt-2">
+                                <span class="text-success fw-semibold"><i class="bi bi-circle-fill" style="font-size: 8px;"></i> Pos: <span id="labelPosScore">50%</span></span>
+                                <span class="text-secondary fw-semibold"><i class="bi bi-circle-fill" style="font-size: 8px;"></i> Neu: <span id="labelNeuScore">30%</span></span>
+                                <span class="text-danger fw-semibold"><i class="bi bi-circle-fill" style="font-size: 8px;"></i> Neg: <span id="labelNegScore">20%</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Preprocessing Breakdown Card -->
+                        <div class="p-3 bg-light rounded-3 border mb-3">
+                            <h6 class="fw-bold small text-muted text-uppercase mb-2">
+                                <i class="bi bi-cpu me-1"></i>Text Preprocessing Metrics
+                            </h6>
+                            <div class="row g-2 text-center mb-2">
+                                <div class="col-6">
+                                    <div class="p-2 bg-white rounded border">
+                                        <small class="text-muted d-block">Word Count</small>
+                                        <strong class="fs-6" id="prepWords">0</strong>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-2 bg-white rounded border">
+                                        <small class="text-muted d-block">Char Count</small>
+                                        <strong class="fs-6" id="prepChars">0</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Extracted Keywords -->
+                            <div id="keywordsBox">
+                                <small class="text-muted d-block mb-1">Key Sentiment Tokens:</small>
+                                <div class="d-flex flex-wrap gap-1" id="prepKeywords"></div>
+                            </div>
+                        </div>
+
+                        <!-- Action Footer -->
+                        <div class="d-flex justify-content-between align-items-center pt-2 mt-auto border-top">
+                            <span class="small text-muted" id="savedStatusText">
+                                <i class="bi bi-check-circle-fill text-success me-1"></i>Saved to database
+                            </span>
+                            <a href="{{ url_for('history.history_view') }}" class="btn btn-outline-primary btn-sm">
+                                View in History <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const sentimentForm = document.getElementById("sentimentForm");
+    const reviewInput = document.getElementById("reviewInput");
+    const charCount = document.getElementById("charCount");
+    const clearTextBtn = document.getElementById("clearTextBtn");
+    const saveRecordToggle = document.getElementById("saveRecordToggle");
+    const analyzeSubmitBtn = document.getElementById("analyzeSubmitBtn");
+    const analyzeSpinner = document.getElementById("analyzeSpinner");
+    const analyzeIcon = document.getElementById("analyzeIcon");
+    const analyzeAlert = document.getElementById("analyzeAlert");
+
+    const placeholderState = document.getElementById("placeholderState");
+    const resultContent = document.getElementById("resultContent");
+    const bannerSentiment = document.getElementById("bannerSentiment");
+    const resEmoji = document.getElementById("resEmoji");
+    const resSentimentLabel = document.getElementById("resSentimentLabel");
+    const resConfidence = document.getElementById("resConfidence");
+    const resCompound = document.getElementById("resCompound");
+    const barPos = document.getElementById("barPos");
+    const barNeu = document.getElementById("barNeu");
+    const barNeg = document.getElementById("barNeg");
+    const labelPosScore = document.getElementById("labelPosScore");
+    const labelNeuScore = document.getElementById("labelNeuScore");
+    const labelNegScore = document.getElementById("labelNegScore");
+    const prepWords = document.getElementById("prepWords");
+    const prepChars = document.getElementById("prepChars");
+    const prepKeywords = document.getElementById("prepKeywords");
+    const savedStatusText = document.getElementById("savedStatusText");
+
+    // Character counter
+    reviewInput.addEventListener("input", function() {
+        charCount.textContent = this.value.length;
+    });
+
+    // Clear button
+    clearTextBtn.addEventListener("click", function() {
+        reviewInput.value = "";
+        charCount.textContent = "0";
+        reviewInput.focus();
+    });
+
+    // Benchmark sample buttons
+    document.querySelectorAll(".sample-pill").forEach(btn => {
+        btn.addEventListener("click", function() {
+            reviewInput.value = this.getAttribute("data-text");
+            charCount.textContent = reviewInput.value.length;
+            sentimentForm.dispatchEvent(new Event("submit"));
+        });
+    });
+
+    // Form submission
+    sentimentForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const text = reviewInput.value.trim();
+        if (!text) {
+            showAlert("Please enter or paste a review before analyzing.", "warning");
+            return;
+        }
+
+        analyzeSpinner.classList.remove("d-none");
+        analyzeIcon.classList.add("d-none");
+        analyzeSubmitBtn.disabled = true;
+        analyzeAlert.classList.add("d-none");
+
+        try {
+            const response = await fetch("/api/analyze", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    text: text,
+                    save: saveRecordToggle.checked
+                })
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                showAlert(result.error || "Failed to analyze sentiment", "danger");
+                return;
+            }
+
+            const data = result.data;
+            displayResults(data);
+            showToast(`Analyzed successfully: ${data.sentiment} (${data.confidence}%)`, "success");
+
+        } catch (err) {
+            showAlert("Connection error while calling sentiment API.", "danger");
+        } finally {
+            analyzeSpinner.classList.add("d-none");
+            analyzeIcon.classList.remove("d-none");
+            analyzeSubmitBtn.disabled = false;
+        }
+    });
+
+    function displayResults(data) {
+        placeholderState.classList.add("d-none");
+        resultContent.classList.remove("d-none");
+
+        const s = data.sentiment;
+        resSentimentLabel.textContent = s;
+        resConfidence.textContent = `${data.confidence}%`;
+        resCompound.textContent = `Compound Score: ${data.compound >= 0 ? '+' : ''}${data.compound}`;
+
+        // Reset banner classes
+        bannerSentiment.className = "sentiment-result-banner p-4 rounded-4 text-center mb-4 text-white shadow-sm";
+
+        if (s === "Positive") {
+            bannerSentiment.classList.add("bg-gradient-success");
+            resEmoji.textContent = "😊";
+        } else if (s === "Negative") {
+            bannerSentiment.classList.add("bg-gradient-danger");
+            resEmoji.textContent = "😞";
+        } else {
+            bannerSentiment.classList.add("bg-gradient-neutral");
+            resEmoji.textContent = "😐";
+        }
+
+        // Score bars
+        barPos.style.width = `${data.scores.positive}%`;
+        barNeu.style.width = `${data.scores.neutral}%`;
+        barNeg.style.width = `${data.scores.negative}%`;
+        labelPosScore.textContent = `${data.scores.positive}%`;
+        labelNeuScore.textContent = `${data.scores.neutral}%`;
+        labelNegScore.textContent = `${data.scores.negative}%`;
+
+        // Preprocessing metrics
+        prepWords.textContent = data.preprocessing.word_count;
+        prepChars.textContent = data.preprocessing.char_count;
+
+        // Keywords
+        prepKeywords.innerHTML = "";
+        if (data.preprocessing.key_words && data.preprocessing.key_words.length > 0) {
+            data.preprocessing.key_words.forEach(kw => {
+                const badge = document.createElement("span");
+                badge.className = "badge bg-white text-dark border small";
+                badge.textContent = kw;
+                prepKeywords.appendChild(badge);
+            });
+        } else {
+            prepKeywords.innerHTML = '<span class="text-muted small">No significant keywords</span>';
+        }
+
+        // Save status
+        if (data.record_id) {
+            savedStatusText.innerHTML = '<i class="bi bi-check-circle-fill text-success me-1"></i>Saved to database';
+        } else {
+            savedStatusText.innerHTML = '<i class="bi bi-eye text-muted me-1"></i>Preview only (not saved)';
+        }
+    }
+
+    function showAlert(msg, type) {
+        analyzeAlert.className = `alert alert-${type} py-2 px-3 small rounded-3 mt-3`;
+        analyzeAlert.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-1"></i> ${msg}`;
+        analyzeAlert.classList.remove("d-none");
+    }
+});
+</script>
+{% endblock %}

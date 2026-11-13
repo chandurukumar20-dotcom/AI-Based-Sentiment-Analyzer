@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block title %}History - SentiAI Pro Sentiment Records{% endblock %}
+{% block page_title %}Analysis History{% endblock %}
+{% block page_subtitle %}Search, filter, and manage historical sentiment classifications saved in the database{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Top Filter & Search Bar -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3 align-items-center">
+                <!-- Search Input -->
+                <div class="col-lg-5 col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-muted">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0" id="historySearchInput" placeholder="Search by review text or keyword...">
+                    </div>
+                </div>
+
+                <!-- Sentiment Filter Dropdown -->
+                <div class="col-lg-3 col-md-6">
+                    <select class="form-select" id="historySentimentFilter">
+                        <option value="all">All Sentiments (Positive, Negative, Neutral)</option>
+                        <option value="positive">Positive Only</option>
+                        <option value="negative">Negative Only</option>
+                        <option value="neutral">Neutral Only</option>
+                    </select>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-lg-4 d-flex justify-content-md-end gap-2">
+                    <a href="{{ url_for('history.export_history_csv') }}" class="btn btn-outline-secondary d-flex align-items-center gap-1 shadow-sm">
+                        <i class="bi bi-download"></i>
+                        <span>Export CSV</span>
+                    </a>
+                    <button class="btn btn-outline-danger d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#clearAllModal">
+                        <i class="bi bi-trash3"></i>
+                        <span>Clear All</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Table Card -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold mb-0">Saved Analysis Records</h5>
+                <small class="text-muted" id="historyCountBadge">Loaded records from database</small>
+            </div>
+            <button class="btn btn-sm btn-link text-muted text-decoration-none" id="refreshHistoryBtn">
+                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+            </button>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 custom-table" id="historyTable">
+                    <thead class="table-light text-uppercase small text-muted">
+                        <tr>
+                            <th class="ps-4">Review Text</th>
+                            <th>Sentiment</th>
+                            <th>Confidence</th>
+                            <th>Source</th>
+                            <th>Positive / Neu / Neg</th>
+                            <th>Timestamp</th>
+                            <th class="pe-4 text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <!-- Populated via AJAX -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Loading Spinner State -->
+            <div class="text-center py-5 d-none" id="historySpinner">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="text-muted small mt-2">Loading historical sentiment records...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div class="text-center py-5 d-none" id="historyEmpty">
+                <i class="bi bi-inbox fs-1 text-secondary d-block mb-2"></i>
+                <h6 class="fw-bold text-dark">No records found</h6>
+                <p class="text-muted small mb-3">No sentiment records match your current filter or search criteria.</p>
+                <a href="{{ url_for('analysis.analyze_view') }}" class="btn btn-sm btn-primary">
+                    Analyze a Review Now
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Clear All Confirmation Modal -->
+<div class="modal fade" id="clearAllModal" tabindex="-1" aria-labelledby="clearAllModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger" id="clearAllModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Clear Entire History?
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <p class="text-muted mb-0">
+                    Are you sure you want to permanently delete all sentiment analysis records from the database? This action cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmClearAllBtn">Yes, Clear All Records</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const historyTableBody = document.getElementById("historyTableBody");
+    const historySpinner = document.getElementById("historySpinner");
+    const historyEmpty = document.getElementById("historyEmpty");
+    const historyCountBadge = document.getElementById("historyCountBadge");
+    const historySearchInput = document.getElementById("historySearchInput");
+    const historySentimentFilter = document.getElementById("historySentimentFilter");
+    const refreshHistoryBtn = document.getElementById("refreshHistoryBtn");
+    const confirmClearAllBtn = document.getElementById("confirmClearAllBtn");
+
+    let debounceTimer;
+
+    // Load history records from backend API
+    async function loadHistory() {
+        const sentiment = historySentimentFilter.value;
+        const search = historySearchInput.value.trim();
+
+        historySpinner.classList.remove("d-none");
+        historyEmpty.classList.add("d-none");
+        historyTableBody.innerHTML = "";
+
+        try {
+            const url = `/api/history?sentiment=${encodeURIComponent(sentiment)}&search=${encodeURIComponent(search)}`;
+            const res = await fetch(url);
+            const data = await res.json();
+
+            historySpinner.classList.add("d-none");
+
+            if (!data.success || !data.records || data.records.length === 0) {
+                historyEmpty.classList.remove("d-none");
+                historyCountBadge.textContent = "0 records found";
+                return;
+            }
+
+            historyCountBadge.textContent = `Showing ${data.records.length} of ${data.total_in_db} records`;
+            renderRows(data.records);
+
+        } catch (err) {
+            historySpinner.classList.add("d-none");
+            historyTableBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">Failed to fetch history records</td></tr>`;
+        }
+    }
+
+    function renderRows(records) {
+        let html = "";
+        records.forEach(rec => {
+            const s = rec.sentiment;
+            let badgeClass = "badge-neutral";
+            let icon = "bi-emoji-neutral-fill";
+            if (s === "Positive") { badgeClass = "badge-positive"; icon = "bi-emoji-smile-fill"; }
+            else if (s === "Negative") { badgeClass = "badge-negative"; icon = "bi-emoji-frown-fill"; }
+
+            const scores = rec.scores || { positive: 0, neutral: 0, negative: 0 };
+
+            html += `
+                <tr id="row-${rec._id}">
+                    <td class="ps-4" style="max-width: 320px;">
+                        <div class="fw-medium text-dark text-break" style="max-height: 80px; overflow-y: auto;">
+                            ${escapeHtml(rec.text)}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="sentiment-badge ${badgeClass}">
+                            <i class="bi ${icon} me-1"></i>${s}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="fw-bold">${rec.confidence}%</span>
+                    </td>
+                    <td>
+                        ${rec.source === 'batch' 
+                            ? `<span class="badge bg-info-subtle text-info border border-info-subtle"><i class="bi bi-file-earmark-spreadsheet me-1"></i>CSV</span>`
+                            : `<span class="badge bg-light text-dark border"><i class="bi bi-keyboard me-1"></i>Single</span>`
+                        }
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-1 small text-muted font-monospace">
+                            <span class="text-success">${scores.positive || 0}%</span> /
+                            <span class="text-secondary">${scores.neutral || 0}%</span> /
+                            <span class="text-danger">${scores.negative || 0}%</span>
+                        </div>
+                    </td>
+                    <td class="text-muted small text-nowrap">
+                        ${rec.created_at || 'Recent'}
+                    </td>
+                    <td class="pe-4 text-end">
+                        <button class="btn btn-sm btn-outline-danger delete-history-btn" data-id="${rec._id}" title="Delete record">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        historyTableBody.innerHTML = html;
+
+        // Attach event listeners to delete buttons
+        document.querySelectorAll(".delete-history-btn").forEach(btn => {
+            btn.addEventListener("click", function() {
+                const id = this.getAttribute("data-id");
+                deleteSingleRecord(id);
+            });
+        });
+    }
+
+    async function deleteSingleRecord(id) {
+        if (!confirm("Are you sure you want to delete this record?")) return;
+
+        try {
+            const res = await fetch(`/api/history/delete/${id}`, { method: "POST" });
+            const data = await res.json();
+            if (data.success) {
+                const row = document.getElementById(`row-${id}`);
+                if (row) {
+                    row.remove();
+                }
+                showToast("Record deleted successfully", "info");
+                // Check if table empty
+                if (historyTableBody.children.length === 0) {
+                    historyEmpty.classList.remove("d-none");
+                }
+            } else {
+                alert(data.error || "Failed to delete record");
+            }
+        } catch (err) {
+            alert("Error communicating with database");
+        }
+    }
+
+    // Clear all confirm button
+    confirmClearAllBtn.addEventListener("click", async function() {
+        const modal = bootstrap.Modal.getInstance(document.getElementById("clearAllModal"));
+        try {
+            const res = await fetch("/api/history/clear", { method: "POST" });
+            const data = await res.json();
+            if (data.success) {
+                if (modal) modal.hide();
+                showToast("All history records cleared", "warning");
+                loadHistory();
+            }
+        } catch (err) {
+            alert("Failed to clear records");
+        }
+    });
+
+    // Event listeners for search and filters
+    historySearchInput.addEventListener("input", function() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(loadHistory, 300);
+    });
+
+    historySentimentFilter.addEventListener("change", loadHistory);
+    refreshHistoryBtn.addEventListener("click", loadHistory);
+
+    function escapeHtml(str) {
+        return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // Initial load
+    loadHistory();
+});
+</script>
+{% endblock %}

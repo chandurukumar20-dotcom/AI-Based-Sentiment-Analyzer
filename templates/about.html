@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}About &amp; Methodology - SentiAI Pro{% endblock %}
+{% block page_title %}About &amp; NLP Methodology{% endblock %}
+{% block page_subtitle %}Comprehensive overview of algorithms, data pipelines, and technology stack{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Architecture Overview Card -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4 p-md-5">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-8">
+                    <span class="badge bg-primary-subtle text-primary mb-2 px-3 py-1 fw-semibold">SYSTEM ARCHITECTURE</span>
+                    <h3 class="fw-bold mb-3">Enterprise AI-Based Sentiment Analysis System</h3>
+                    <p class="text-muted lead fs-6">
+                        SentiAI Pro is designed to ingest unstructured customer feedback across multiple touchpoints—ranging from single text reviews to bulk enterprise datasets—and accurately translate natural language into granular, actionable sentiment intelligence.
+                    </p>
+                </div>
+                <div class="col-lg-4 text-center">
+                    <div class="p-3 bg-light rounded-4 border">
+                        <div class="text-primary fs-1 mb-2">
+                            <i class="bi bi-diagram-3-fill"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1">Dual-Engine AI Pipeline</h6>
+                        <span class="small text-muted">Hugging Face Transformers &amp; NLTK VADER</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Methodology & NLP Pipeline -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 p-4">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="feature-icon bg-info-subtle text-info rounded-3">
+                        <i class="bi bi-gear-wide-connected fs-4"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">1. Text Preprocessing Pipeline</h5>
+                </div>
+                <p class="text-muted small">
+                    Before sentiment classification, raw unstructured text undergoes structured data cleaning and normalization:
+                </p>
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item px-0 d-flex gap-2">
+                        <i class="bi bi-check2-circle text-primary mt-1"></i>
+                        <div>
+                            <strong>Noise &amp; Markup Stripping:</strong> Removes raw HTML tags, embedded URLs, hyperlinks, and irregular control characters.
+                        </div>
+                    </li>
+                    <li class="list-group-item px-0 d-flex gap-2">
+                        <i class="bi bi-check2-circle text-primary mt-1"></i>
+                        <div>
+                            <strong>Tokenization:</strong> Splits linguistic streams into individual tokens and alphanumeric lemmas.
+                        </div>
+                    </li>
+                    <li class="list-group-item px-0 d-flex gap-2">
+                        <i class="bi bi-check2-circle text-primary mt-1"></i>
+                        <div>
+                            <strong>Stopword Filtration:</strong> Eliminates non-informative words (e.g. <em>the, is, at, which</em>) using NLTK corpora while preserving negation cues (e.g. <em>not, nor, neither</em>) essential for sentiment context.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 p-4">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="feature-icon bg-success-subtle text-success rounded-3">
+                        <i class="bi bi-cpu-fill fs-4"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">2. Three-Class Scoring Logic</h5>
+                </div>
+                <p class="text-muted small">
+                    Rather than binary classification, our engine calculates positive, neutral, and negative probability distributions alongside a normalized <em>Compound Score</em> ranging from <code class="font-monospace">-1.0</code> (extreme negative) to <code class="font-monospace">+1.0</code> (extreme positive):
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm small mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Class</th>
+                                <th>Compound Condition</th>
+                                <th>Real-World Example</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="badge bg-success">Positive</span></td>
+                                <td><code>compound &gt;= +0.05</code></td>
+                                <td><em>"The product is excellent and customer service is amazing."</em></td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge bg-danger">Negative</span></td>
+                                <td><code>compound &lt;= -0.05</code></td>
+                                <td><em>"The product is terrible and I am very disappointed."</em></td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge bg-secondary">Neutral</span></td>
+                                <td><code>-0.05 &lt; compound &lt; +0.05</code></td>
+                                <td><em>"The product was delivered yesterday."</em></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Models Comparison -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2">
+            <h5 class="fw-bold mb-1">Dual-Engine Model Strategy</h5>
+            <small class="text-muted">High-accuracy neural sequence modeling with high-speed rule-based resilience</small>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="p-4 rounded-4 bg-light border h-100">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h6 class="fw-bold mb-0 text-primary">
+                                <i class="bi bi-stars me-2"></i>Hugging Face Transformers
+                            </h6>
+                            <span class="badge bg-primary">Neural Deep Learning</span>
+                        </div>
+                        <p class="text-muted small mb-3">
+                            Uses pre-trained transformer checkpoints (such as <code>cardiffnlp/twitter-roberta-base-sentiment-latest</code> or BERT) leveraging self-attention mechanisms to understand complex syntax, sarcasm, and sentence context.
+                        </p>
+                        <div class="small">
+                            <strong>Key Advantages:</strong> High contextual precision, deep semantic representation, handles idiomatic expressions.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="p-4 rounded-4 bg-light border h-100">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h6 class="fw-bold mb-0 text-success">
+                                <i class="bi bi-lightning-charge-fill me-2"></i>NLTK VADER Lexicon Engine
+                            </h6>
+                            <span class="badge bg-success">Rule &amp; Lexicon NLP</span>
+                        </div>
+                        <p class="text-muted small mb-3">
+                            Specifically tuned for microblogs, social commentary, and customer reviews. Employs a gold-standard lexical dictionary with grammatical modifiers (negations, boosters, punctuation emphasis, capitalization).
+                        </p>
+                        <div class="small">
+                            <strong>Key Advantages:</strong> Instant inference (millisecond response), zero heavy GPU requirements, 100% offline availability.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technology Stack Grid -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2">
+            <h5 class="fw-bold mb-1">Complete Technology Stack</h5>
+            <small class="text-muted">Full-stack components powering SentiAI Pro</small>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-lg-3 col-sm-6">
+                    <div class="p-3 border rounded-3 bg-white h-100">
+                        <div class="text-primary fs-3 mb-2"><i class="bi bi-filetype-py"></i></div>
+                        <h6 class="fw-bold mb-1">Python 3 &amp; Flask</h6>
+                        <small class="text-muted">Lightweight, modular backend architecture using Flask Blueprints and RESTful endpoints.</small>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6">
+                    <div class="p-3 border rounded-3 bg-white h-100">
+                        <div class="text-success fs-3 mb-2"><i class="bi bi-database-fill"></i></div>
+                        <h6 class="fw-bold mb-1">MongoDB &amp; PyMongo</h6>
+                        <small class="text-muted">NoSQL document store for review logs, metrics, timestamps, and confidence ratings.</small>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6">
+                    <div class="p-3 border rounded-3 bg-white h-100">
+                        <div class="text-warning fs-3 mb-2"><i class="bi bi-cpu"></i></div>
+                        <h6 class="fw-bold mb-1">Transformers &amp; NLTK</h6>
+                        <small class="text-muted">Advanced NLP tokenization, lexicon polarity valuation, and deep sequence classification.</small>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6">
+                    <div class="p-3 border rounded-3 bg-white h-100">
+                        <div class="text-info fs-3 mb-2"><i class="bi bi-pie-chart"></i></div>
+                        <h6 class="fw-bold mb-1">Chart.js &amp; Bootstrap 5</h6>
+                        <small class="text-muted">Clean, mobile-responsive dashboard interface with interactive charts and fluid layouts.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

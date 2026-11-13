@@ -1,0 +1,16 @@
+Review_ID,Customer_Name,Review_Text,Product_Category
+1,Alice Johnson,"The product is excellent and the customer service is amazing.",Electronics
+2,Bob Smith,"The product is terrible and I am very disappointed.",Appliances
+3,Charlie Brown,"The product was delivered yesterday.",Logistics
+4,Diana Prince,"Absolutely loved this purchase! High quality material and fast delivery.",Fashion
+5,Evan Wright,"Worst experience ever. It stopped working after two days and no refund was given.",Electronics
+6,Fiona Gallagher,"Average quality, neither good nor bad. Does the basic job as described.",Home Goods
+7,George Clark,"Incredible value for money! Highly recommended to everyone looking for great value.",Tech Gadgets
+8,Hannah Abbott,"Extremely poor customer support. Waited on hold for 45 minutes without any help.",Services
+9,Ian Malcolm,"The package arrived in a brown cardboard box with standard tape.",Packaging
+10,Julia Roberts,"Stunning design and exceptional battery life! Exceeded all my expectations.",Smartphones
+11,Kevin Bacon,"Defective on arrival. Screen was cracked and power button was completely loose.",Electronics
+12,Laura Croft,"I received three units in the order.",Office Supplies
+13,Michael Scott,"This is the best purchase I have made all year! Fantastic work team.",Electronics
+14,Nancy Drew,"Waste of hard-earned money. Very low durability and broke on first use.",Kitchenware
+15,Oliver Queen,"Item dimensions are 12 inches by 8 inches as indicated in the product manual.",Hardware

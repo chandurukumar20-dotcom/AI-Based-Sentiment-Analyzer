@@ -1,0 +1,349 @@
+{% extends "base.html" %}
+
+{% block title %}Bulk CSV Analysis - SentiAI Pro{% endblock %}
+{% block page_title %}Batch Sentiment Analysis{% endblock %}
+{% block page_subtitle %}Upload customer reviews in CSV format for automated high-throughput sentiment classification{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Upload Card -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+            <div>
+                <h5 class="fw-bold mb-0">Upload Dataset (CSV)</h5>
+                <small class="text-muted">Supports CSV files containing review text or customer feedback columns</small>
+            </div>
+            <a href="{{ url_for('analysis.download_sample_csv') }}" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1 shadow-sm">
+                <i class="bi bi-filetype-csv text-success fs-6"></i>
+                <span>Download Sample Reviews CSV</span>
+            </a>
+        </div>
+        <div class="card-body p-4">
+            <form id="bulkUploadForm" enctype="multipart/form-data">
+                <!-- Drag and drop zone -->
+                <div class="drop-zone p-5 text-center rounded-4 border-2 border-dashed mb-3" id="dropZone">
+                    <input type="file" id="csvFileInput" name="file" accept=".csv" class="d-none">
+                    <div class="drop-zone-prompt">
+                        <div class="mb-3">
+                            <i class="bi bi-cloud-arrow-up-fill text-primary" style="font-size: 3.5rem;"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1">Drag and drop your .CSV file here</h6>
+                        <p class="text-muted small mb-3">or click to browse your computer</p>
+                        <button type="button" class="btn btn-primary btn-sm px-4 shadow-sm" id="browseFileBtn">
+                            Browse Files
+                        </button>
+                    </div>
+                    <div class="drop-zone-fileinfo d-none" id="fileInfoBox">
+                        <i class="bi bi-file-earmark-spreadsheet-fill text-success" style="font-size: 2.5rem;"></i>
+                        <h6 class="fw-bold mb-0 mt-2 text-dark" id="selectedFileName">dataset.csv</h6>
+                        <span class="text-muted small" id="selectedFileSize">0 KB</span>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none" id="removeFileBtn">
+                                <i class="bi bi-x-circle me-1"></i>Remove file
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Options Accordion -->
+                <div class="row g-3 align-items-center mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted fw-semibold">
+                            Target Column Name <span class="badge bg-light text-dark border">Auto-Detected by default</span>
+                        </label>
+                        <input type="text" class="form-control form-control-sm" id="textColumnInput" name="text_column" placeholder="e.g. review_text, Review, comments (optional)">
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check form-switch pt-md-4">
+                            <input class="form-check-input" type="checkbox" id="saveBulkToDb" name="save_to_db" value="true" checked>
+                            <label class="form-check-label small fw-semibold text-muted" for="saveBulkToDb">
+                                Save processed records into MongoDB database
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                    <span class="text-muted small">
+                        <i class="bi bi-shield-check text-success me-1"></i>16MB maximum file size limit
+                    </span>
+                    <button type="submit" class="btn btn-success px-4 py-2 fw-semibold d-flex align-items-center gap-2 shadow-sm" id="processBtn" disabled>
+                        <span class="spinner-border spinner-border-sm d-none" id="uploadSpinner" role="status"></span>
+                        <i class="bi bi-play-circle-fill" id="uploadIcon"></i>
+                        <span>Start Batch Sentiment Analysis</span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Error message container -->
+            <div id="bulkAlert" class="mt-3 d-none"></div>
+        </div>
+    </div>
+
+    <!-- Batch Results Section (Hidden until uploaded) -->
+    <div id="batchResultsSection" class="d-none">
+        <!-- Summary Metric Cards -->
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
+            <div>
+                <h4 class="fw-bold mb-0">Batch Analysis Results</h4>
+                <p class="text-muted small mb-0" id="batchResultSubtitle">Summary of classified rows</p>
+            </div>
+            <a href="#" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm" id="downloadResultsBtn">
+                <i class="bi bi-download"></i>
+                <span>Download Enriched CSV</span>
+            </a>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                    <span class="text-muted small text-uppercase fw-semibold">Total Rows</span>
+                    <h3 class="fw-bold text-dark mt-1 mb-0" id="batchTotalCount">0</h3>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-4 border-success">
+                    <span class="text-success small text-uppercase fw-semibold">Positive</span>
+                    <div class="d-flex align-items-baseline gap-2 mt-1">
+                        <h3 class="fw-bold text-success mb-0" id="batchPosCount">0</h3>
+                        <span class="badge bg-success-subtle text-success small" id="batchPosPct">0%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-4 border-danger">
+                    <span class="text-danger small text-uppercase fw-semibold">Negative</span>
+                    <div class="d-flex align-items-baseline gap-2 mt-1">
+                        <h3 class="fw-bold text-danger mb-0" id="batchNegCount">0</h3>
+                        <span class="badge bg-danger-subtle text-danger small" id="batchNegPct">0%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-4 border-secondary">
+                    <span class="text-secondary small text-uppercase fw-semibold">Neutral</span>
+                    <div class="d-flex align-items-baseline gap-2 mt-1">
+                        <h3 class="fw-bold text-secondary mb-0" id="batchNeuCount">0</h3>
+                        <span class="badge bg-secondary-subtle text-secondary small" id="batchNeuPct">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview Table -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="fw-bold mb-0">Preview Analyzed Records</h5>
+                    <small class="text-muted">Displaying the first 30 rows with predicted sentiment labels and confidence</small>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 custom-table" id="batchPreviewTable">
+                        <thead class="table-light text-uppercase small text-muted" id="batchTableHead">
+                            <!-- Populated dynamically -->
+                        </thead>
+                        <tbody id="batchTableBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const dropZone = document.getElementById("dropZone");
+    const csvFileInput = document.getElementById("csvFileInput");
+    const browseFileBtn = document.getElementById("browseFileBtn");
+    const fileInfoBox = document.getElementById("fileInfoBox");
+    const selectedFileName = document.getElementById("selectedFileName");
+    const selectedFileSize = document.getElementById("selectedFileSize");
+    const removeFileBtn = document.getElementById("removeFileBtn");
+    const processBtn = document.getElementById("processBtn");
+    const bulkUploadForm = document.getElementById("bulkUploadForm");
+    const uploadSpinner = document.getElementById("uploadSpinner");
+    const uploadIcon = document.getElementById("uploadIcon");
+    const bulkAlert = document.getElementById("bulkAlert");
+
+    const batchResultsSection = document.getElementById("batchResultsSection");
+    const batchResultSubtitle = document.getElementById("batchResultSubtitle");
+    const batchTotalCount = document.getElementById("batchTotalCount");
+    const batchPosCount = document.getElementById("batchPosCount");
+    const batchPosPct = document.getElementById("batchPosPct");
+    const batchNegCount = document.getElementById("batchNegCount");
+    const batchNegPct = document.getElementById("batchNegPct");
+    const batchNeuCount = document.getElementById("batchNeuCount");
+    const batchNeuPct = document.getElementById("batchNeuPct");
+    const downloadResultsBtn = document.getElementById("downloadResultsBtn");
+    const batchTableHead = document.getElementById("batchTableHead");
+    const batchTableBody = document.getElementById("batchTableBody");
+
+    // Browse click trigger
+    browseFileBtn.addEventListener("click", () => csvFileInput.click());
+
+    // File selection handler
+    csvFileInput.addEventListener("change", function() {
+        if (this.files.length > 0) {
+            handleFileSelected(this.files[0]);
+        }
+    });
+
+    // Drag and drop event handlers
+    ["dragenter", "dragover"].forEach(evt => {
+        dropZone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.add("dragover");
+        });
+    });
+
+    ["dragleave", "drop"].forEach(evt => {
+        dropZone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove("dragover");
+        });
+    });
+
+    dropZone.addEventListener("drop", (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length > 0) {
+            csvFileInput.files = files;
+            handleFileSelected(files[0]);
+        }
+    });
+
+    function handleFileSelected(file) {
+        if (!file.name.toLowerCase().endsWith(".csv")) {
+            showError("Only CSV files are supported. Please select a .csv file.");
+            resetFile();
+            return;
+        }
+
+        selectedFileName.textContent = file.name;
+        selectedFileSize.textContent = formatBytes(file.size);
+        dropZone.querySelector(".drop-zone-prompt").classList.add("d-none");
+        fileInfoBox.classList.remove("d-none");
+        processBtn.disabled = false;
+        bulkAlert.classList.add("d-none");
+    }
+
+    removeFileBtn.addEventListener("click", resetFile);
+
+    function resetFile() {
+        csvFileInput.value = "";
+        dropZone.querySelector(".drop-zone-prompt").classList.remove("d-none");
+        fileInfoBox.classList.add("d-none");
+        processBtn.disabled = true;
+    }
+
+    function formatBytes(bytes) {
+        if (bytes === 0) return "0 Bytes";
+        const k = 1024;
+        const sizes = ["Bytes", "KB", "MB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    }
+
+    function showError(msg) {
+        bulkAlert.className = "alert alert-danger py-2 px-3 small rounded-3 mt-3";
+        bulkAlert.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-1"></i> ${msg}`;
+        bulkAlert.classList.remove("d-none");
+    }
+
+    // Submit batch analysis form
+    bulkUploadForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+        if (!csvFileInput.files.length) return;
+
+        const formData = new FormData(bulkUploadForm);
+
+        uploadSpinner.classList.remove("d-none");
+        uploadIcon.classList.add("d-none");
+        processBtn.disabled = true;
+        bulkAlert.classList.add("d-none");
+
+        try {
+            const res = await fetch("/api/bulk-analyze", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await res.json();
+            if (!data.success) {
+                showError(data.error || "Batch analysis failed");
+                return;
+            }
+
+            renderBatchResults(data);
+            showToast(`Batch completed: ${data.total_records} reviews analyzed!`, "success");
+
+        } catch (err) {
+            showError("Network or server error while uploading dataset.");
+        } finally {
+            uploadSpinner.classList.add("d-none");
+            uploadIcon.classList.remove("d-none");
+            processBtn.disabled = false;
+        }
+    });
+
+    function renderBatchResults(data) {
+        batchResultsSection.classList.remove("d-none");
+        batchResultSubtitle.textContent = `File: ${data.filename} | Target Column: "${data.analyzed_column}"`;
+
+        const s = data.summary;
+        batchTotalCount.textContent = s.total;
+        batchPosCount.textContent = s.positive;
+        batchPosPct.textContent = `${s.positive_pct}%`;
+        batchNegCount.textContent = s.negative;
+        batchNegPct.textContent = `${s.negative_pct}%`;
+        batchNeuCount.textContent = s.neutral;
+        batchNeuPct.textContent = `${s.neutral_pct}%`;
+
+        downloadResultsBtn.href = `/download-results/${data.download_token}`;
+
+        // Populate table headers
+        const columns = data.columns.filter(c => !["Compound_Score", "Positive_Score", "Negative_Score", "Neutral_Score"].includes(c));
+        let thHtml = "<tr>";
+        columns.forEach(col => {
+            thHtml += `<th class="ps-3">${col}</th>`;
+        });
+        thHtml += "</tr>";
+        batchTableHead.innerHTML = thHtml;
+
+        // Populate table body rows
+        let tbHtml = "";
+        data.preview.forEach(row => {
+            tbHtml += "<tr>";
+            columns.forEach(col => {
+                const val = row[col] !== undefined && row[col] !== null ? row[col] : "";
+                if (col === "Predicted_Sentiment") {
+                    let badgeClass = "badge-neutral";
+                    let icon = "bi-emoji-neutral-fill";
+                    if (val === "Positive") { badgeClass = "badge-positive"; icon = "bi-emoji-smile-fill"; }
+                    else if (val === "Negative") { badgeClass = "badge-negative"; icon = "bi-emoji-frown-fill"; }
+                    tbHtml += `<td class="ps-3"><span class="sentiment-badge ${badgeClass}"><i class="bi ${icon} me-1"></i>${val}</span></td>`;
+                } else if (col === "Confidence_Score") {
+                    tbHtml += `<td class="ps-3 fw-bold">${val}%</td>`;
+                } else {
+                    tbHtml += `<td class="ps-3 text-truncate" style="max-width: 250px;" title="${val}">${val}</td>`;
+                }
+            });
+            tbHtml += "</tr>";
+        });
+        batchTableBody.innerHTML = tbHtml;
+
+        // Scroll to results smoothly
+        batchResultsSection.scrollIntoView({ behavior: "smooth" });
+    }
+});
+</script>
+{% endblock %}
